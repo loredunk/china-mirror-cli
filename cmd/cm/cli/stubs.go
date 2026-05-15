@@ -7,29 +7,7 @@ import (
 )
 
 // These commands are placeholders. Each is replaced by a real implementation
-// in its own package as the rollout proceeds (doctor, health, config, plugin).
-
-func newDoctorCmd(g *GlobalFlags) *cobra.Command {
-	return &cobra.Command{
-		Use:   "doctor",
-		Short: "Diagnose the local network and tool environment",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return fmt.Errorf("doctor: not implemented yet — see internal/doctor")
-		},
-	}
-}
-
-func newHealthCmd(g *GlobalFlags) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "health",
-		Short: "Run health checks against every configured mirror",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return fmt.Errorf("health: not implemented yet — see internal/health")
-		},
-	}
-	cmd.Flags().String("category", "", "filter by category")
-	return cmd
-}
+// in its own package as the rollout proceeds (config, plugin).
 
 func newBackupCmd(g *GlobalFlags) *cobra.Command {
 	return &cobra.Command{

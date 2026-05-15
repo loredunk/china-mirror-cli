@@ -9,10 +9,45 @@ const (
 	StatusCommunity  Status = "community"
 )
 
+// Verify describes how a mirror's reachability is probed. The schema
+// matches scripts/check_mirrors.py so the resulting JSON report stays
+// drop-in compatible with reports/report.json consumers.
 type Verify struct {
-	Type         string `yaml:"type"           json:"type"`
-	URL          string `yaml:"url"            json:"url"`
-	ExpectStatus int    `yaml:"expect_status"  json:"expect_status"`
+	Type                 string `yaml:"type"                            json:"type"`
+	URL                  string `yaml:"url,omitempty"                   json:"url,omitempty"`
+	Method               string `yaml:"method,omitempty"                json:"method,omitempty"`
+	ExpectStatus         int    `yaml:"expect_status,omitempty"         json:"expect_status,omitempty"`
+	ExpectStatusIn       []int  `yaml:"expect_status_in,omitempty"      json:"expect_status_in,omitempty"`
+	InconclusiveStatuses []int  `yaml:"inconclusive_statuses,omitempty" json:"inconclusive_statuses,omitempty"`
+	Prefix               string `yaml:"prefix,omitempty"                json:"prefix,omitempty"`
+	TestURL              string `yaml:"test_url,omitempty"              json:"test_url,omitempty"`
+}
+
+// AcceptableStatuses returns the HTTP codes that count as "ok".
+func (v Verify) AcceptableStatuses() []int {
+	if len(v.ExpectStatusIn) > 0 {
+		return v.ExpectStatusIn
+	}
+	if v.ExpectStatus != 0 {
+		return []int{v.ExpectStatus}
+	}
+	return []int{200}
+}
+
+// ProbeURL returns the URL that should actually be fetched, falling back
+// to the mirror's main URL when no explicit verify URL is configured.
+func (v Verify) ProbeURL(fallback string) string {
+	if v.Type == "github_proxy" {
+		prefix := v.Prefix
+		if prefix == "" {
+			prefix = fallback
+		}
+		return prefix + v.TestURL
+	}
+	if v.URL != "" {
+		return v.URL
+	}
+	return fallback
 }
 
 type Mirror struct {
