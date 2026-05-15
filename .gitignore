@@ -48,3 +48,9 @@ AGENTS.md
 *.tmp
 *.bak
 *.orig
+
+# Go
+bin/
+*.test
+*.out
+coverage.txt

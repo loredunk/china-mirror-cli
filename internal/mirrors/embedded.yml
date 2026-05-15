@@ -1,0 +1,1003 @@
+# China Mirror Sources for Development Tools
+# This file contains verified mirror sources for development tools in China
+#
+# Policy:
+# - Prioritize official university mirrors (TUNA, USTC)
+# - Prioritize official vendor mirrors (npmmirror, Tencent Cloud)
+# - Require official documentation/help page for each mirror
+# - Mark mirrors as deprecated if official announcement says so
+#
+# Status values:
+# - active: Verified working, recommended
+# - testing: Under evaluation
+# - deprecated: Officially discontinued or unreliable
+# - community: Community maintained, use with caution
+
+version: "0.1.0"
+updated_at: "2026-05-08"
+
+mirrors:
+  # ==================== Python (pip) ====================
+  - id: pip-tuna
+    name: "Tsinghua TUNA PyPI Mirror"
+    category: pip
+    url: "https://pypi.tuna.tsinghua.edu.cn/simple"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/pypi/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/pypi/"
+    verify:
+      type: http
+      url: "https://pypi.tuna.tsinghua.edu.cn/simple/pip/"
+      expect_status: 200
+    notes: "Official Tsinghua University mirror, highly reliable"
+
+  - id: pip-ustc
+    name: "USTC PyPI Mirror"
+    category: pip
+    url: "https://pypi.mirrors.ustc.edu.cn/simple"
+    homepage: "https://mirrors.ustc.edu.cn/help/pypi.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/pypi.html"
+    verify:
+      type: http
+      url: "https://pypi.mirrors.ustc.edu.cn/simple/pip/"
+      expect_status: 200
+    notes: "Official USTC mirror, synchronized every 5 minutes"
+
+  - id: pip-aliyun
+    name: "Alibaba Cloud PyPI Mirror"
+    category: pip
+    url: "https://mirrors.aliyun.com/pypi/simple"
+    homepage: "https://developer.aliyun.com/mirror/pypi"
+    status: active
+    priority: 3
+    official_help: "https://developer.aliyun.com/mirror/pypi"
+    verify:
+      type: http
+      url: "https://mirrors.aliyun.com/pypi/simple/pip/"
+      expect_status: 200
+    notes: "Alibaba Cloud mirror, good availability"
+
+  # ==================== Node.js (npm) ====================
+  - id: npm-npmmirror
+    name: "npmmirror (Taobao)"
+    category: npm
+    url: "https://registry.npmmirror.com"
+    homepage: "https://npmmirror.com"
+    status: active
+    priority: 1
+    official_help: "https://npmmirror.com"
+    verify:
+      type: http
+      url: "https://registry.npmmirror.com/npm"
+      expect_status: 200
+    notes: "Official npm mirror by Taobao, most reliable in China"
+
+  - id: npm-tencent
+    name: "Tencent Cloud NPM Mirror"
+    category: npm
+    url: "https://mirrors.cloud.tencent.com/npm/"
+    homepage: "https://mirrors.cloud.tencent.com/help/npm.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.cloud.tencent.com/help/npm.html"
+    verify:
+      type: http
+      url: "https://mirrors.cloud.tencent.com/npm/npm"
+      expect_status: 200
+    notes: "Tencent Cloud official mirror"
+
+  # ==================== Ubuntu (apt) ====================
+  - id: ubuntu-tuna
+    name: "Tsinghua TUNA Ubuntu Mirror"
+    category: ubuntu
+    url: "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/dists/"
+      expect_status: 200
+    notes: "Official TUNA Ubuntu mirror"
+    codenames:
+      - jammy    # 22.04 LTS
+      - noble    # 24.04 LTS
+      - focal    # 20.04 LTS
+
+  - id: ubuntu-ustc
+    name: "USTC Ubuntu Mirror"
+    category: ubuntu
+    url: "https://mirrors.ustc.edu.cn/ubuntu/"
+    homepage: "https://mirrors.ustc.edu.cn/help/ubuntu.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/ubuntu.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/ubuntu/dists/"
+      expect_status: 200
+    notes: "Official USTC Ubuntu mirror"
+    codenames:
+      - jammy
+      - noble
+      - focal
+
+  # ==================== Docker CE ====================
+  # IMPORTANT: Docker CE install repo is DIFFERENT from Docker Hub mirror
+  - id: docker-ce-tuna
+    name: "Tsinghua TUNA Docker CE Mirror"
+    category: docker-ce
+    url: "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu/"
+      expect_status: 200
+    notes: "Docker CE installation packages, NOT Docker Hub image mirror"
+    supported_distros:
+      - ubuntu
+      - debian
+      - centos
+      - fedora
+
+  - id: docker-ce-ustc
+    name: "USTC Docker CE Mirror"
+    category: docker-ce
+    url: "https://mirrors.ustc.edu.cn/docker-ce/linux/"
+    homepage: "https://mirrors.ustc.edu.cn/help/docker-ce.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/docker-ce.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu/"
+      expect_status: 200
+    notes: "Docker CE installation packages"
+    supported_distros:
+      - ubuntu
+      - debian
+      - centos
+      - fedora
+
+  # ==================== Docker Hub (Registry) ====================
+  # IMPORTANT: These are Docker Hub image pull mirrors, NOT Docker CE install repos
+  # Configure via /etc/docker/daemon.json registry-mirrors
+  - id: docker-hub-1ms
+    name: "1ms.run Docker Hub Mirror"
+    category: docker-hub
+    url: "https://docker.1ms.run"
+    homepage: "https://docker.1ms.run"
+    status: active
+    priority: 1
+    official_help: "https://docker.1ms.run"
+    verify:
+      type: http
+      url: "https://docker.1ms.run/v2/"
+      # 标准 Docker Registry v2 协议：未带 token 访问 /v2/ 应返回 401（携带 WWW-Authenticate）
+      expect_status: 401
+    notes: |
+      配置方式：写入 /etc/docker/daemon.json
+      {
+        "registry-mirrors": ["https://docker.1ms.run"],
+        "dns": ["1.1.1.1", "8.8.8.8"]
+      }
+      然后执行 sudo systemctl restart docker
+
+  - id: docker-hub-daocloud
+    name: "DaoCloud Docker Hub Mirror"
+    category: docker-hub
+    url: "https://docker.m.daocloud.io"
+    homepage: "https://docker.m.daocloud.io"
+    status: active
+    priority: 2
+    official_help: "https://docker.m.daocloud.io"
+    verify:
+      type: http
+      url: "https://docker.m.daocloud.io/v2/"
+      expect_status: 401
+    notes: |
+      配置方式：写入 /etc/docker/daemon.json
+      {
+        "registry-mirrors": ["https://docker.m.daocloud.io"],
+        "dns": ["1.1.1.1", "8.8.8.8"]
+      }
+      然后执行 sudo systemctl restart docker
+
+  - id: docker-hub-hlmirror
+    name: "HLMirror Docker Hub Mirror"
+    category: docker-hub
+    url: "https://docker.hlmirror.com"
+    homepage: "https://docker.hlmirror.com"
+    # 2026-05：HLMirror 已 302 跳转到商业域名 mirror.houlang.cloud，需付费/认证。
+    status: deprecated
+    priority: 9
+    official_help: "https://docker.hlmirror.com"
+    verify:
+      type: http
+      url: "https://docker.hlmirror.com/v2/"
+      # 跟随跳转后落到 houlang.cloud，返回 401（需付费认证），不再可用作公共镜像
+      expect_status: 401
+      inconclusive_statuses: [302, 401, 403]
+    notes: |
+      已弃用：服务于 2026 年迁移到 mirror.houlang.cloud 并改为付费/认证制，
+      不再适合作为公共 Docker Hub 加速镜像。请改用 docker.1ms.run 或
+      docker.m.daocloud.io（见上方两条）。
+
+  # ==================== Rust (Cargo) ====================
+  - id: cargo-ustc
+    name: "USTC Rust Crates Mirror"
+    category: cargo
+    url: "https://mirrors.ustc.edu.cn/crates.io-index/"
+    homepage: "https://mirrors.ustc.edu.cn/help/crates.io-index.html"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.ustc.edu.cn/help/crates.io-index.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/crates.io-index/"
+      expect_status: 200
+    notes: "Official USTC Rust crates mirror, sparse index supported"
+    config:
+      sparse_index: "https://mirrors.ustc.edu.cn/crates.io-index/"
+
+  - id: cargo-tuna
+    name: "Tsinghua TUNA Rust Crates Mirror"
+    category: cargo
+    url: "https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/crates.io-index/"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/crates.io-index/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/"
+      expect_status: 200
+    notes: "Official TUNA Rust crates mirror"
+    config:
+      sparse_index: "https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/"
+
+  # ==================== Homebrew ====================
+  - id: brew-tuna
+    name: "Tsinghua TUNA Homebrew Mirror"
+    category: homebrew
+    url: "https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/homebrew/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/homebrew/"
+    verify:
+      type: http
+      # 直接探测 brew.git 的 HEAD 文件，git smart HTTP 必返回 200，比 install.sh 更稳定
+      url: "https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git/HEAD"
+      expect_status: 200
+    notes: "TUNA Homebrew git repositories mirror"
+    repos:
+      - brew
+      - core
+      - cask
+      - services
+
+  - id: brew-ustc
+    name: "USTC Homebrew Mirror"
+    category: homebrew
+    url: "https://mirrors.ustc.edu.cn/brew.git"
+    homepage: "https://mirrors.ustc.edu.cn/help/brew.git.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/brew.git.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/brew.git/"
+      expect_status: 200
+    notes: "USTC Homebrew git repositories mirror"
+    repos:
+      - brew
+      - core
+      - cask
+      - services
+
+  # ==================== Conda ====================
+  - id: conda-tuna
+    name: "Tsinghua TUNA Anaconda Mirror"
+    category: conda
+    url: "https://mirrors.tuna.tsinghua.edu.cn/anaconda/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/anaconda/"
+      expect_status: 200
+    notes: "Official TUNA Anaconda mirror"
+    channels:
+      - main
+      - free
+      - r
+      - bioconda
+      - conda-forge
+
+  - id: conda-ustc
+    name: "USTC Anaconda Mirror"
+    category: conda
+    url: "https://mirrors.ustc.edu.cn/anaconda/"
+    homepage: "https://mirrors.ustc.edu.cn/help/anaconda.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/anaconda.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/anaconda/"
+      expect_status: 200
+    notes: "Official USTC Anaconda mirror"
+    channels:
+      - main
+      - free
+      - r
+      - bioconda
+      - conda-forge
+
+  # ==================== Go ====================
+  - id: go-proxy-cn
+    name: "China Go Module Proxy"
+    category: go
+    url: "https://goproxy.cn"
+    homepage: "https://goproxy.cn"
+    status: active
+    priority: 1
+    official_help: "https://goproxy.cn"
+    verify:
+      type: go_proxy
+      # GOPROXY 协议路径：/<module>/@v/<version>.info，返回 200+JSON 表示代理可用
+      # 404 表示代理在线但未缓存该版本，同样视为健康
+      url: "https://goproxy.cn/github.com/pkg/errors/@v/v0.9.1.info"
+      expect_status_in: [200, 404]
+    notes: "Official China Go module proxy by Qiniu Cloud, highly reliable"
+
+  - id: go-proxy-aliyun
+    name: "Alibaba Cloud Go Module Proxy"
+    category: go
+    url: "https://mirrors.aliyun.com/goproxy/"
+    homepage: "https://developer.aliyun.com/mirror/goproxy"
+    status: active
+    priority: 2
+    official_help: "https://developer.aliyun.com/mirror/goproxy"
+    verify:
+      type: go_proxy
+      url: "https://mirrors.aliyun.com/goproxy/github.com/pkg/errors/@v/v0.9.1.info"
+      expect_status_in: [200, 404]
+    notes: "Alibaba Cloud Go module proxy"
+
+  # ==================== Flutter ====================
+  - id: flutter-cfug
+    name: "CFUG Flutter Mirror"
+    category: flutter
+    url: "https://storage.flutter-io.cn"
+    homepage: "https://docs.flutter.cn/community/china/"
+    status: active
+    priority: 1
+    official_help: "https://docs.flutter.cn/community/china/"
+    verify:
+      type: http
+      url: "https://storage.flutter-io.cn/flutter_infra_release/releases/releases_linux.json"
+      expect_status: 200
+    notes: "Follow Flutter 官方中国网络文档：PUB_HOSTED_URL=https://pub.flutter-io.cn, FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn"
+    config:
+      pub_hosted_url: "https://pub.flutter-io.cn"
+      flutter_storage_base_url: "https://storage.flutter-io.cn"
+
+  # ==================== GitHub Releases ====================
+  - id: github-release-tuna
+    name: "Tsinghua TUNA GitHub Release Mirror"
+    category: github-release
+    url: "https://mirrors.tuna.tsinghua.edu.cn/github-release/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/github-release/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/github-release/"
+    verify:
+      type: http
+      method: head
+      # TUNA 选择性镜像 GitHub release（不收录 cli/cli），改用一直保留的 git-for-windows/git 探测
+      url: "https://mirrors.tuna.tsinghua.edu.cn/github-release/git-for-windows/git/"
+      expect_status: 200
+      inconclusive_statuses: [403, 404]
+    notes: |
+      TUNA 选择性镜像 GitHub Releases（仅收录列表内的项目，如 git-for-windows、kubernetes、
+      llvm、microsoft、prometheus、rustdesk 等），不是通用 release 代理。完整列表见
+      https://mirrors.tuna.tsinghua.edu.cn/github-release/
+
+  - id: github-release-ustc
+    name: "USTC GitHub Release Mirror"
+    category: github-release
+    url: "https://mirrors.ustc.edu.cn/github-release/"
+    homepage: "https://mirrors.ustc.edu.cn/help/github-release.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/github-release.html"
+    verify:
+      type: http
+      method: head
+      # USTC 对部分非中国大陆 IP 屏蔽 /github-release/ 内容（CI runner 受影响），但帮助页可达
+      url: "https://mirrors.ustc.edu.cn/help/github-release.html"
+      expect_status: 200
+      inconclusive_statuses: [403, 404]
+    notes: |
+      USTC 提供 GitHub Releases 资源镜像，适合下载 release 资产；
+      非中国大陆出口（如海外 CI）访问 /github-release/ 可能被反代返回 403，
+      在中国大陆网络下使用正常。
+
+  - id: github-release-ghfast
+    name: "ghfast.top GitHub Proxy"
+    category: github-release
+    url: "https://ghfast.top/"
+    homepage: "https://ghproxy.link/"
+    status: active
+    priority: 3
+    verify:
+      type: github_proxy
+      method: head
+      prefix: "https://ghfast.top/"
+      test_url: "https://github.com/cli/cli/releases/download/v2.69.0/gh_2.69.0_checksums.txt"
+      expect_status: 200
+      inconclusive_statuses: [403, 404, 503]
+    notes: "公益 GitHub 加速代理，支持 release/clone/archive/raw，域名可能变动，参见 ghproxy.link"
+
+  # ==================== GitHub Project Mirrors ====================
+  - id: github-repo-ghfast
+    name: "ghfast.top GitHub Clone Proxy"
+    category: github-repo
+    url: "https://ghfast.top/"
+    homepage: "https://ghproxy.link/"
+    status: active
+    priority: 1
+    verify:
+      type: github_proxy
+      method: head
+      prefix: "https://ghfast.top/"
+      test_url: "https://github.com/cli/cli/archive/refs/heads/trunk.zip"
+      expect_status: 200
+      inconclusive_statuses: [403, 404, 503]
+    notes: "公益 GitHub 加速代理，通过 git config url.insteadOf 配置全局加速 clone"
+
+  # ==================== Hugging Face ====================
+  - id: huggingface-hf-mirror
+    name: "hf-mirror Hugging Face Mirror"
+    category: huggingface
+    url: "https://hf-mirror.com"
+    homepage: "https://hf-mirror.com/"
+    status: active
+    priority: 1
+    official_help: "https://hf-mirror.com/"
+    verify:
+      type: http
+      url: "https://hf-mirror.com/api/models/gpt2"
+      expect_status: 200
+    notes: |
+      Hugging Face 模型与数据集镜像。推荐只在当前下载命令临时设置：
+      HF_ENDPOINT=https://hf-mirror.com
+      不要写入 shell profile，下载结束后自动失效更安全。
+
+  # ==================== Alpine Linux ====================
+  - id: alpine-tuna
+    name: "Tsinghua TUNA Alpine Mirror"
+    category: alpine
+    url: "https://mirrors.tuna.tsinghua.edu.cn/alpine/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/alpine/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/alpine/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/alpine/MIRRORS.txt"
+      expect_status: 200
+    notes: "TUNA Alpine Linux package mirror"
+
+  - id: alpine-ustc
+    name: "USTC Alpine Mirror"
+    category: alpine
+    url: "https://mirrors.ustc.edu.cn/alpine/"
+    homepage: "https://mirrors.ustc.edu.cn/help/alpine.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/alpine.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/alpine/MIRRORS.txt"
+      expect_status: 200
+    notes: "USTC Alpine Linux package mirror"
+
+  # ==================== Python Install (下载/安装 Python 本体) ====================
+  # NOTE: These mirrors are for downloading Python itself, NOT for pip packages.
+  # Use these with pyenv (PYTHON_BUILD_MIRROR_URL) to install Python versions.
+  - id: python-install-huawei
+    name: "Huawei Cloud Python Releases Mirror"
+    category: python-install
+    url: "https://mirrors.huaweicloud.com/python/"
+    homepage: "https://mirrors.huaweicloud.com/home"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.huaweicloud.com/home"
+    verify:
+      type: http
+      url: "https://mirrors.huaweicloud.com/python/"
+      expect_status: 200
+    notes: |
+      用于 pyenv 安装 Python：
+      export PYTHON_BUILD_MIRROR_URL=https://mirrors.huaweicloud.com/python/
+      pyenv install 3.12.0
+
+  - id: python-install-tuna
+    name: "Tsinghua TUNA Python Releases Mirror"
+    category: python-install
+    # 2026-05：TUNA 将路径从 /python-release/ 调整为 /python/
+    url: "https://mirrors.tuna.tsinghua.edu.cn/python/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/python/"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/python/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/python/"
+      expect_status: 200
+    notes: |
+      用于 pyenv 安装 Python：
+      export PYTHON_BUILD_MIRROR_URL=https://mirrors.tuna.tsinghua.edu.cn/python/
+      pyenv install 3.12.0
+
+  # ==================== Node.js Install (下载/安装 Node.js 本体) ====================
+  # NOTE: These mirrors are for downloading Node.js itself, NOT for npm packages.
+  # Use with nvm (NVM_NODEJS_ORG_MIRROR) to install Node.js versions.
+  - id: node-install-npmmirror
+    name: "npmmirror Node.js Binary Mirror"
+    category: node-install
+    url: "https://npmmirror.com/mirrors/node/"
+    homepage: "https://npmmirror.com"
+    status: active
+    priority: 1
+    official_help: "https://npmmirror.com"
+    verify:
+      type: http
+      url: "https://npmmirror.com/mirrors/node/"
+      expect_status: 200
+    notes: |
+      用于 nvm 安装 Node.js：
+      export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node/
+      nvm install 20
+
+  - id: node-install-tuna
+    name: "Tsinghua TUNA Node.js Mirror"
+    category: node-install
+    url: "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/nodejs-release/"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/nodejs-release/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/"
+      expect_status: 200
+    notes: |
+      用于 nvm 安装 Node.js：
+      export NVM_NODEJS_ORG_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/
+      nvm install 20
+
+  # ==================== Conda/Miniconda Install (下载 Miniconda 安装包) ====================
+  # NOTE: These mirrors host the Miniconda/Anaconda installer, NOT conda packages.
+  # For conda package mirrors (channels), see the 'conda' category above.
+  - id: conda-install-tuna
+    name: "Tsinghua TUNA Miniconda Installer Mirror"
+    category: conda-install
+    url: "https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/"
+      expect_status: 200
+    notes: |
+      下载 Miniconda 安装包：
+      wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+      bash Miniconda3-latest-Linux-x86_64.sh
+
+  - id: conda-install-ustc
+    name: "USTC Miniconda Installer Mirror"
+    category: conda-install
+    url: "https://mirrors.ustc.edu.cn/anaconda/miniconda/"
+    homepage: "https://mirrors.ustc.edu.cn/help/anaconda.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/anaconda.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/anaconda/miniconda/"
+      expect_status: 200
+    notes: |
+      下载 Miniconda 安装包：
+      wget https://mirrors.ustc.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+      bash Miniconda3-latest-Linux-x86_64.sh
+
+  # ==================== Rust/rustup Install (下载/安装 Rust 工具链) ====================
+  # NOTE: These mirrors provide Rust toolchains via rustup, NOT crates.io packages.
+  # For crates.io mirrors, see the 'cargo' category above.
+  - id: rust-install-tuna
+    name: "Tsinghua TUNA Rustup Mirror"
+    category: rust-install
+    url: "https://mirrors.tuna.tsinghua.edu.cn/rustup"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/rustup/"
+    status: active
+    priority: 1
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/rustup/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/rustup/rustup/release-stable.toml"
+      expect_status: 200
+    notes: |
+      安装 Rust：
+      export RUSTUP_DIST_SERVER=https://mirrors.tuna.tsinghua.edu.cn/rustup
+      export RUSTUP_UPDATE_ROOT=https://mirrors.tuna.tsinghua.edu.cn/rustup/rustup
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+  - id: rust-install-ustc
+    name: "USTC Rust Static Mirror"
+    category: rust-install
+    url: "https://mirrors.ustc.edu.cn/rust-static"
+    homepage: "https://mirrors.ustc.edu.cn/help/rust-static.html"
+    status: active
+    priority: 2
+    official_help: "https://mirrors.ustc.edu.cn/help/rust-static.html"
+    verify:
+      type: http
+      url: "https://mirrors.ustc.edu.cn/rust-static/rustup/release-stable.toml"
+      expect_status: 200
+    notes: |
+      安装 Rust：
+      export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+      export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+  # ==================== Go Install (下载/安装 Go 二进制包) ====================
+  # NOTE: These mirrors host Go language binaries for installation.
+  # For Go module proxy, see the 'go' category above.
+  - id: go-install-tuna
+    name: "Tsinghua TUNA Go Binary Mirror"
+    category: go-install
+    url: "https://mirrors.tuna.tsinghua.edu.cn/golang/"
+    homepage: "https://mirrors.tuna.tsinghua.edu.cn/help/golang/"
+    # 2026-05：TUNA 已下线 Go 二进制镜像，/golang/、/go/、/golang-release/ 均 404
+    status: deprecated
+    priority: 9
+    official_help: "https://mirrors.tuna.tsinghua.edu.cn/help/golang/"
+    verify:
+      type: http
+      url: "https://mirrors.tuna.tsinghua.edu.cn/golang/"
+      expect_status: 200
+      inconclusive_statuses: [404]
+    notes: |
+      已弃用：TUNA 于 2026 年下线 Go 二进制镜像。请改用阿里云镜像
+      （见 go-install-aliyun）下载 Go 工具链。
+
+  - id: go-install-aliyun
+    name: "Alibaba Cloud Go Binary Mirror"
+    category: go-install
+    url: "https://mirrors.aliyun.com/golang/"
+    homepage: "https://developer.aliyun.com/mirror/golang"
+    status: active
+    # TUNA 下线后阿里云成为 go-install 类别的首选
+    priority: 1
+    official_help: "https://developer.aliyun.com/mirror/golang"
+    verify:
+      type: http
+      url: "https://mirrors.aliyun.com/golang/"
+      expect_status: 200
+    notes: |
+      下载并安装 Go：
+      wget https://mirrors.aliyun.com/golang/go1.22.0.linux-amd64.tar.gz
+
+# ==================== Categories Metadata ====================
+#
+# mirror_type 说明：
+#   registry  - 包管理器注册源（配置工具下载包的地址，工具必须已安装）
+#   install   - 工具安装源（下载工具本体的镜像，用于首次安装工具）
+#   download  - 内容下载镜像（下载文件/模型/Release 资产等）
+#   system    - 系统包管理器源（apt/apk 等）
+#
+categories:
+  # --- registry: 配置包管理器注册源 ---
+  pip:
+    name: "Python (pip)"
+    description: "PyPI 包注册源镜像，配置 pip/uv/poetry 下载 Python 包的地址"
+    icon: "🐍"
+    mirror_type: registry
+    # quick_use_template 中可用占位符：{{ url }}（推荐镜像 URL）、{{ name }}、{{ host }}、{{ homepage }}
+    quick_use_template: |
+      ```bash
+      # 一次性使用（仅当前命令）
+      pip install -i {{ url }} <package>
+
+      # 当前 shell 生效（关闭终端后失效）
+      export PIP_INDEX_URL={{ url }}
+
+      # 永久写入用户配置
+      pip config set global.index-url {{ url }}
+      ```
+  npm:
+    name: "Node.js (npm)"
+    description: "npm 注册源镜像，配置 npm/yarn/pnpm 下载 JS 包的地址"
+    icon: "📦"
+    mirror_type: registry
+    quick_use_template: |
+      ```bash
+      # 一次性使用
+      npm install --registry={{ url }} <package>
+
+      # 当前 shell 生效
+      export NPM_CONFIG_REGISTRY={{ url }}
+
+      # 永久写入用户配置（~/.npmrc）
+      npm config set registry {{ url }}
+      # yarn / pnpm 同样的命令把 npm 换成对应工具即可
+      ```
+  docker-hub:
+    name: "Docker Hub"
+    description: "Docker Hub 镜像加速（配置 daemon.json registry-mirrors）"
+    icon: "🐳"
+    mirror_type: registry
+    quick_use_template: |
+      > Docker daemon 不读环境变量，必须写入 `daemon.json` 后重启 Docker 才生效。
+
+      Linux：
+      ```bash
+      sudo mkdir -p /etc/docker
+      echo '{"registry-mirrors": ["{{ url }}"]}' | sudo tee /etc/docker/daemon.json
+      sudo systemctl restart docker
+      ```
+
+      macOS / Windows：在 Docker Desktop → Settings → Docker Engine 里填
+      ```json
+      { "registry-mirrors": ["{{ url }}"] }
+      ```
+  cargo:
+    name: "Rust (Cargo)"
+    description: "Crates.io 注册源镜像，配置 cargo 下载 Rust 包的地址"
+    icon: "🦀"
+    mirror_type: registry
+    quick_use_template: |
+      ```bash
+      # 永久写入用户配置（~/.cargo/config.toml）
+      mkdir -p ~/.cargo
+      cat >> ~/.cargo/config.toml <<'EOF'
+      [source.crates-io]
+      replace-with = "mirror"
+
+      [source.mirror]
+      registry = "sparse+{{ url }}"
+      EOF
+      ```
+      > 需要 cargo 1.68+ 才支持 sparse 协议；老版本去掉 `sparse+` 前缀。
+  homebrew:
+    name: "Homebrew"
+    description: "Homebrew tap 和 formula 镜像，配置 Homebrew 的 git 仓库地址"
+    icon: "🍺"
+    mirror_type: registry
+    quick_use_template: |
+      > Homebrew 涉及 4 个环境变量，且不同镜像的子路径不同，复制时请参考
+      > [{{ name }} 官方帮助页]({{ homepage }})。下面以最常用的两个为例：
+
+      ```bash
+      # 当前 shell 生效（USTC 风格）
+      export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
+      export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+      ```
+  conda:
+    name: "Conda/Anaconda"
+    description: "Anaconda 包仓库镜像，配置 conda 频道地址（.condarc）"
+    icon: "🐍"
+    mirror_type: registry
+    quick_use_template: |
+      ```bash
+      # 一次性使用（仅当前命令）
+      conda install -c {{ url_clean }}/pkgs/main <package>
+
+      # 永久写入 ~/.condarc
+      conda config --remove-key channels 2>/dev/null || true
+      conda config --add channels {{ url_clean }}/pkgs/main
+      conda config --add channels {{ url_clean }}/pkgs/r
+      conda config --add channels {{ url_clean }}/cloud/conda-forge
+      conda config --set show_channel_urls yes
+      ```
+  go:
+    name: "Go"
+    description: "Go 模块代理镜像，配置 GOPROXY 环境变量"
+    icon: "🐹"
+    mirror_type: registry
+    quick_use_template: |
+      ```bash
+      # 一次性使用（仅当前命令）
+      GOPROXY={{ url }},direct go mod tidy
+
+      # 当前 shell 生效
+      export GOPROXY={{ url }},direct
+
+      # 永久写入 go env
+      go env -w GOPROXY={{ url }},direct
+      ```
+  flutter:
+    name: "Flutter"
+    description: "Flutter/Dart 包镜像，配置 PUB_HOSTED_URL 和 FLUTTER_STORAGE_BASE_URL"
+    icon: "📱"
+    mirror_type: registry
+    quick_use_template: |
+      ```bash
+      # 当前 shell 生效（Flutter 官方中国网络配置）
+      export PUB_HOSTED_URL=https://pub.flutter-io.cn
+      export FLUTTER_STORAGE_BASE_URL={{ url }}
+
+      # 永久写入 shell profile
+      echo 'export PUB_HOSTED_URL=https://pub.flutter-io.cn' >> ~/.zshrc
+      echo 'export FLUTTER_STORAGE_BASE_URL={{ url }}' >> ~/.zshrc
+      ```
+
+  # --- install: 工具本体安装源 ---
+  docker-ce:
+    name: "Docker CE"
+    description: "Docker CE 安装包镜像（apt repo），用于安装 Docker 引擎本体"
+    icon: "🐳"
+    mirror_type: install
+    quick_use_template: |
+      > 把官方 Docker apt 源里的域名替换成镜像域名（Ubuntu/Debian 通用）。
+
+      ```bash
+      # 已安装 docker-ce 的系统，把 sources.list.d 里的 download.docker.com 替换为镜像
+      sudo sed -i.bak 's|download.docker.com|{{ host }}/docker-ce|g' \
+        /etc/apt/sources.list.d/docker.list
+      sudo apt update
+      ```
+  python-install:
+    name: "Python（安装本体）"
+    description: "Python 发行版下载镜像，与 pyenv 配合安装 Python 本体（PYTHON_BUILD_MIRROR_URL）"
+    icon: "🐍"
+    mirror_type: install
+    quick_use_template: |
+      ```bash
+      # 当前 shell 生效（让 pyenv 从国内镜像下载 Python 源码包）
+      export PYTHON_BUILD_MIRROR_URL={{ url }}
+      pyenv install 3.12.0
+      ```
+  node-install:
+    name: "Node.js（安装本体）"
+    description: "Node.js 二进制包下载镜像，与 nvm 配合安装 Node.js 本体（NVM_NODEJS_ORG_MIRROR）"
+    icon: "📦"
+    mirror_type: install
+    quick_use_template: |
+      ```bash
+      # 当前 shell 生效（让 nvm 从国内镜像下载 Node.js 二进制）
+      export NVM_NODEJS_ORG_MIRROR={{ url }}
+      nvm install 20
+
+      # fnm 用户改为
+      export FNM_NODE_DIST_MIRROR={{ url }}
+      ```
+  conda-install:
+    name: "Conda/Miniconda（安装本体）"
+    description: "Miniconda/Anaconda 安装包下载镜像，用于下载 conda 工具本体的 .sh 安装包"
+    icon: "🐍"
+    mirror_type: install
+    quick_use_template: |
+      ```bash
+      # Linux x86_64：直接下载并安装 Miniconda
+      wget {{ url }}Miniconda3-latest-Linux-x86_64.sh
+      bash Miniconda3-latest-Linux-x86_64.sh
+      ```
+  rust-install:
+    name: "Rust/rustup（安装本体）"
+    description: "Rust 工具链安装镜像，配置 RUSTUP_DIST_SERVER 安装 rustup 和 Rust 本体"
+    icon: "🦀"
+    mirror_type: install
+    quick_use_template: |
+      ```bash
+      # 当前 shell 生效（rustup 安装/更新走国内镜像）
+      export RUSTUP_DIST_SERVER={{ url }}
+      export RUSTUP_UPDATE_ROOT={{ url }}/rustup
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      ```
+  go-install:
+    name: "Go（安装本体）"
+    description: "Go 语言二进制包下载镜像，用于下载并安装 Go 语言本体"
+    icon: "🐹"
+    mirror_type: install
+    quick_use_template: |
+      ```bash
+      # Linux x86_64：直接下载并解压 Go
+      wget {{ url }}go1.22.0.linux-amd64.tar.gz
+      sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+      ```
+
+  # --- download: 内容/资产下载镜像 ---
+  github-release:
+    name: "GitHub Releases"
+    description: "GitHub release 资产下载镜像，加速下载工具的发布包"
+    icon: "🐙"
+    mirror_type: download
+    quick_use_template: |
+      ```bash
+      # ghfast 通用代理：在原始 GitHub URL 前面拼接前缀即可
+      curl -L -O https://ghfast.top/https://github.com/<owner>/<repo>/releases/download/<tag>/<asset>
+
+      # TUNA / USTC 选择性镜像：把 https://github.com 替换为镜像前缀（仅收录的仓库可用）
+      # 例：https://mirrors.tuna.tsinghua.edu.cn/github-release/git-for-windows/git/...
+      ```
+  github-repo:
+    name: "GitHub Clone Acceleration"
+    description: "GitHub 仓库 clone 加速代理"
+    icon: "🐙"
+    mirror_type: download
+    quick_use_template: |
+      ```bash
+      # 一次性使用（仅这一次 clone）
+      git clone {{ url }}https://github.com/<owner>/<repo>.git
+
+      # 永久重写：让 git 把所有 github.com 的 clone 自动走镜像
+      git config --global url."{{ url }}https://github.com/".insteadOf "https://github.com/"
+      ```
+  huggingface:
+    name: "Hugging Face"
+    description: "Hugging Face 模型和数据集下载镜像"
+    icon: "🤗"
+    mirror_type: download
+    quick_use_template: |
+      ```bash
+      # 推荐：仅当前命令注入镜像（最安全，不污染环境）
+      HF_ENDPOINT={{ url }} huggingface-cli download gpt2
+
+      # 当前 shell 生效
+      export HF_ENDPOINT={{ url }}
+      ```
+      > 不建议把 `HF_ENDPOINT` 写入 shell profile，会持续把流量导向镜像。
+
+  # --- system: 系统包管理器源 ---
+  ubuntu:
+    name: "Ubuntu (apt)"
+    description: "Ubuntu APT 软件源，配置 /etc/apt/sources.list"
+    icon: "🐧"
+    mirror_type: system
+    quick_use_template: |
+      ```bash
+      # Ubuntu 24.04+（DEB822 格式）
+      sudo sed -i.bak 's|http://archive.ubuntu.com|https://{{ host }}|g; s|http://security.ubuntu.com|https://{{ host }}|g' \
+        /etc/apt/sources.list.d/ubuntu.sources
+
+      # Ubuntu 22.04 及以前
+      sudo sed -i.bak 's|http://archive.ubuntu.com|https://{{ host }}|g; s|http://security.ubuntu.com|https://{{ host }}|g' \
+        /etc/apt/sources.list
+
+      sudo apt update
+      ```
+      > sed 第一次运行会备份原文件到同名 `.bak`，便于回滚。
+  alpine:
+    name: "Alpine Linux"
+    description: "Alpine Linux apk 包源，配置 /etc/apk/repositories"
+    icon: "🏔️"
+    mirror_type: system
+    quick_use_template: |
+      ```bash
+      sudo sed -i.bak 's|dl-cdn.alpinelinux.org|{{ host }}|g' /etc/apk/repositories
+      sudo apk update
+      ```
+
+# ==================== Health Check Settings ====================
+health_check:
+  timeout: 30
+  retries: 2
+  parallel: true
+  max_workers: 10
+  user_agent: "china-mirror-skills/0.1.0 (Health Check)"
