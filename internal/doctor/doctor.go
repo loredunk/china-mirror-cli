@@ -73,7 +73,7 @@ type Recommendation struct {
 }
 
 // knownTools is the same list as diagnose.sh, kept in the same order so
-// `cm doctor` output remains visually consistent with the bash version
+// `cmc doctor` output remains visually consistent with the bash version
 // during the migration window.
 var knownTools = []string{
 	"pip", "uv", "poetry",
@@ -287,7 +287,7 @@ func recommend(r *Report) []Recommendation {
 			recs = append(recs, Recommendation{
 				Severity: SevHigh,
 				Tool:     t.Name,
-				Message:  t.Name + " is NOT using a China mirror — run `cm " + t.Name + " setup` to configure it.",
+				Message:  t.Name + " is NOT using a China mirror — run `cmc " + recommendCommand(t.Name) + "` to configure it.",
 			})
 		}
 	}
@@ -323,6 +323,22 @@ func firstLine(s string) string {
 		return s[:i]
 	}
 	return s
+}
+
+// recommendCommand maps a detected tool name to the cmc sub-command
+// that configures it. Adapters group multiple tools (pip/uv/poetry →
+// `cmc python setup`), so the mapping is explicit.
+func recommendCommand(tool string) string {
+	switch tool {
+	case "pip", "uv", "poetry":
+		return "python setup --tool " + tool
+	case "npm", "yarn", "pnpm":
+		return "node setup --tool " + tool
+	case "brew":
+		return "homebrew setup"
+	default:
+		return tool + " setup"
+	}
 }
 
 func grep(content, needle string) string {

@@ -540,7 +540,7 @@ func roundTo(v float64, places int) float64 {
 }
 
 // CountCriticalFailures matches check_mirrors.py:count_critical_category_failures,
-// used by `cm health` to decide its exit code in CI.
+// used by `cmc health` to decide its exit code in CI.
 func CountCriticalFailures(rep *Report) int {
 	return len(rep.Summary.CriticalCategories)
 }

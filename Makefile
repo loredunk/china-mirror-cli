@@ -1,15 +1,15 @@
-BINARY := cm
+BINARY := cmc
 PKG := github.com/loredunk/china-mirror
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-LDFLAGS := -s -w -X $(PKG)/cmd/cm/cli.Version=$(VERSION)
+LDFLAGS := -s -w -X $(PKG)/cmd/cmc/cli.Version=$(VERSION)
 
 .PHONY: build install test fmt vet sync-mirrors clean
 
 build: sync-mirrors
-	go build -ldflags "$(LDFLAGS)" -o bin/$(BINARY) ./cmd/cm
+	go build -ldflags "$(LDFLAGS)" -o bin/$(BINARY) ./cmd/cmc
 
 install: sync-mirrors
-	go install -ldflags "$(LDFLAGS)" ./cmd/cm
+	go install -ldflags "$(LDFLAGS)" ./cmd/cmc
 
 test: sync-mirrors
 	go test ./... -race

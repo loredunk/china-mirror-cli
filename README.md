@@ -1,595 +1,189 @@
-# 🇨🇳 China Mirror Skills
+<div align="center">
 
-<p align="center">
-  <strong>强烈推荐用agent来干安装环境的脏活, 用本skills让agent少走弯路。</strong>
-</p>
+# 🇨🇳 china-mirror-cli (`cmc`)
 
-<p align="center">
-  <a href="#安装">安装</a> •
-  <a href="#支持的工具">支持的工具</a> •
-  <a href="#镜像源">镜像源</a>
-</p>
+**给中国开发者的单二进制 CLI ——一行命令把 pip / npm / docker / apt / 等等切到国内镜像。**
+
+让 AI 帮你装环境，或者你自己在终端里敲，都很顺手。
+
+</div>
 
 ---
 
-## 目录
+## 它解决什么问题
 
-- [支持的工具](#支持的工具)
-- [安装](#安装)
-- [镜像源](#镜像源)
-- [安全与风险](#安全与风险)
+国内拉 pypi / npm / docker hub / golang.org 太慢甚至断网，每装一台新机器都要：
+- Google "pip 国内镜像 清华"
+- 复制粘贴 `pip config set global.index-url ...`
+- 同样的事在 `npm`、`yarn`、`docker daemon.json`、`apt sources.list`、`go env` 重复 10 次
+- 配错了又要回滚
+
+`cmc` 把这些都收敛成一个命令行工具：
+
+```bash
+cmc python setup           # 一条命令搞定 pip + uv + poetry
+cmc node setup             # 一条命令搞定 npm + yarn + pnpm
+cmc doctor                 # 看看当前机器什么没配好
+cmc health                 # 看看哪个镜像现在最快
+```
+
+镜像清单（清华 / USTC / 阿里 / npmmirror / 腾讯云 / ...）维护在 `data/mirrors.yml`，运行时读取，CI 每天自动检测健康度。
 
 ---
 
----
+## 为什么是 CLI 而不是脚本或 Skill
 
-## 支持的工具
+设计灵感来自 [OpenCLI](https://github.com/jackwener/opencli) ——「让 AI agent 和人类用同一套接口」。
 
-| 分类 | 工具 | 状态 | 镜像类型 |
-|------|------|------|----------|
-| 🐍 Python (pip) | pip, uv, poetry | ✅ 可用 | Package Index |
-| 📦 Node.js (npm) | npm, pnpm, yarn | ✅ 可用 | Package Index |
-| 🐳 Docker Hub | Docker Hub（镜像加速） | ✅ 可用 | Registry Mirror |
-| 🦀 Rust (Cargo) | Cargo | ✅ 可用 | Package Index |
-| 🍺 Homebrew | Homebrew | ✅ 可用 | Git Repository |
-| 🐍 Conda/Anaconda | Conda/Anaconda | ✅ 可用 | Package Index |
-| 🐹 Go | Go modules | ✅ 可用 | Module Proxy |
-| 📱 Flutter | Flutter SDK | ✅ 可用 | SDK Mirror |
-| 🐳 Docker CE | Docker CE install | ✅ 可用 | 安装源 |
-| 🐍 Python（安装本体） | python-install | ✅ 可用 | 说明 |
-| 📦 Node.js（安装本体） | node-install | ✅ 可用 | 说明 |
-| 🐍 Conda/Miniconda（安装本体） | conda-install | ✅ 可用 | 说明 |
-| 🦀 Rust/rustup（安装本体） | rust-install | ✅ 可用 | 说明 |
-| 🐹 Go（安装本体） | go-install | ✅ 可用 | 说明 |
-| 🐙 GitHub Releases | GitHub Releases | ✅ 可用 | Release Asset Mirror |
-| 🐙 GitHub Clone Acceleration | GitHub 仓库 clone 加速 | ✅ 可用 | Git Repository |
-| 🤗 Hugging Face | Hugging Face models / datasets | ✅ 可用 | Model / Dataset Mirror |
-| 🐧 Ubuntu (apt) | ubuntu | ✅ 可用 | APT Repository |
-| 🏔️ Alpine Linux | alpine | ✅ 可用 | APT Repository |
+| 场景 | 用法 |
+|---|---|
+| **AI 自己装环境**（推荐） | Claude / Cursor / Codex 在你的 shell 里直接 `cmc python setup`，不用嵌一大段 bash |
+| **人在终端** | `cmc <Tab><Tab>` 自动补全，`cmc list mirrors --category pip --format json \| jq` |
+| **CI / 脚本** | `cmc health --format json --output report.json` 输出 JSON，退出码 sysexits 规范 |
+| **插件化扩展** | `cmc plugin install github:user/cmc-plugin-foo` 添加新工具适配器（v2） |
 
-### 核心特性
-
-- ✅ **备份与回滚** - 修改前自动备份配置
-- ✅ **代理冲突检测** - 检测代理环境变量冲突
-- ✅ **幂等操作** - 重复执行安全
-- ✅ **按需临时镜像** - 对 Hugging Face 下载仅在当前命令注入镜像环境变量
-- ✅ **多平台支持** - Linux 为主，macOS 部分支持
-- ✅ **官方来源** - 优先使用 TUNA、USTC 及厂商官方镜像
+一份能力，三种入口；调用方式都是一样的 `cmc <tool> <command> [--flags]`。
 
 ---
 
 ## 安装
 
-本项目是一个 Claude Code Plugin，包含自包含的 `china-mirror` skill，提供镜像配置和网络诊断功能。
-
-### 方式一：Plugin 安装（推荐）
-
-在 Claude Code 中执行：
+> 计划三种途径，目前 v0.1 阶段建议用 `go install` 或源码编译。
 
 ```bash
-# 添加 marketplace
-/plugin marketplace add https://github.com/loredunk/china-mirror-skills
+# 1) 一键脚本（GitHub Release 二进制，正在准备）
+curl -fsSL https://raw.githubusercontent.com/loredunk/china-mirror-cli/main/scripts/install.sh | bash
 
-# 安装插件
-/plugin install china-mirror-skills@china-mirror-market
+# 2) Homebrew（正在准备）
+brew install loredunk/china-mirror/cmc
+
+# 3) 从源码（现在就能用）
+git clone https://github.com/loredunk/china-mirror-cli.git
+cd china-mirror-cli
+make install      # 安装到 $(go env GOPATH)/bin/cmc
+
+# 4) 直接 go install
+go install github.com/loredunk/china-mirror/cmd/cmc@latest
 ```
 
-### 方式二：手动安装
-
-```bash
-# 克隆项目
-git clone https://github.com/loredunk/china-mirror-skills.git
-
-# 安装 skill 到 Claude Code 全局目录
-cp -r china-mirror-skills/china-mirror ~/.claude/skills/
-```
-
-### 安装后使用
-
-直接向 Claude Code 提问即可：
-
-```
-"帮我配置适合中国网络的开发环境"
-"pip install 太慢了，帮我配置国内镜像"
-"诊断我的开发环境网络问题"
-```
-
-### 对于其他agent
-
-- **OpenCode** — 将 `china-mirror/skills/china-mirror` 复制到 OpenCode 的 skills 存储路径
-- **OpenClaw** — 将 `china-mirror/skills/china-mirror` 复制到 `~/.openclaw/skills/china-mirror`（全局）或当前工作区的 `skills/china-mirror`（项目级）
-- **Codex / 其他兼容工具** — 将 `china-mirror/skills/china-mirror`（包含 `SKILL.md` 和 `scripts/`）放入工具对应的 skills 目录
-
-### Skill 功能
-
-| 功能 | 触发场景 |
-|------|---------|
-| 一键配置 | "配置国内镜像"、新机器初始化、全部工具一次性配置 |
-| 单工具修复 | "pip 太慢"、"npm 超时"、指定某个工具配置镜像 |
-| 网络诊断 | "为什么下载慢"、"诊断网络"、检查已安装工具的镜像状态 |
-| 备份还原 | 备份当前配置、还原到修改前的状态 |
-| Hugging Face 下载 | "帮我下模型"、"hf 下载太慢"、临时使用镜像下载模型或数据集 |
+装完 `cmc version` 应输出类似 `cmc v0.1.0 (darwin/arm64)`。
 
 ---
 
-## Hugging Face
+## 快速上手
 
-项目内置了 Hugging Face 的临时镜像下载方式，默认不会写入 shell profile，也不会长期污染环境变量。
+### 让 AI 帮你装
 
-### 一次性使用 `huggingface-cli`
+直接对 Claude / Cursor / Codex 说：
 
-```bash
-HF_ENDPOINT=https://hf-mirror.com huggingface-cli download gpt2
-HF_ENDPOINT=https://hf-mirror.com huggingface-cli download --repo-type dataset wget2 --local-dir ./wget2
-```
+> 帮我用 china mirror cli 把这台机器的所有包管理器都切到国内镜像，然后体检一下。
 
-### 使用内置 `hfd.sh`
+AI 会跑：
 
 ```bash
-bash china-mirror/skills/china-mirror/scripts/huggingface/download.sh gpt2 --tool hfd
-bash china-mirror/skills/china-mirror/scripts/huggingface/download.sh meta-llama/Llama-2-7b --tool hfd --hf_username <your-username> --hf_token <your-token>
+cmc doctor                 # 体检：什么装了、什么没配
+cmc python setup           # 切 pip/uv/poetry
+cmc node setup             # 切 npm/yarn/pnpm
+cmc docker setup           # （即将支持）
+cmc doctor                 # 复检
 ```
 
-- 默认临时注入 `HF_ENDPOINT=https://hf-mirror.com`
-- 若需要直连官方源，可显式传 `--mirror official`
-- `hfd.sh` 来源与用法参考：
-  - `https://hf-mirror.com/`
-  - `https://gist.github.com/padeoe/697678ab8e528b85a2a7bddafea1fa4f`
+每一步都是 idempotent 的，可以反复跑。
+
+### 自己在终端用
+
+```bash
+# 看看支持哪些工具
+cmc list
+
+# 看看 pip 类目下都有哪些镜像源
+cmc list mirrors --category pip
+cmc list mirrors --category pip --format json | jq
+
+# 用清华源配 pip + uv + poetry（默认会用优先级最高的活动镜像）
+cmc python setup
+cmc python setup --mirror pip-tuna       # 显式选清华
+cmc python setup --mirror pip-aliyun     # 改阿里
+cmc python setup --dry-run               # 干跑，只打印不写入
+cmc python setup --tool pip              # 只配 pip，不动 uv/poetry
+
+# Node 同理
+cmc node setup
+cmc node setup --mirror npm-tencent
+
+# 想测一下哪个 pip 镜像现在最快？
+cmc health --category pip
+
+# 出了问题想回滚
+cmc backup --all              # 提前备份所有工具的配置
+cmc restore --list            # 列出所有备份
+cmc restore pip --latest      # 把 pip 配置还原到最近一次备份
+```
+
+### 全局标志（所有子命令通用）
+
+```
+-m, --mirror <id>     选镜像 id（不传则用 mirrors.yml 中 priority=1 的 active 镜像）
+-d, --dry-run         预览生成的配置内容，不写盘
+-y, --yes             跳过确认（脚本/CI 用）
+-f, --force           强制覆盖
+    --format <fmt>    table|json|yaml|md|csv（list/health 等输出类命令）
+-v, --verbose         详细日志
+```
 
 ---
 
-## 镜像源
-
-### 当前镜像状态
-
-_镜像数据最后更新: 2026-05-08_
-_健康检查时间: 2026-05-15T05:18:54.915967Z_
-
-**汇总**: 36/38 个镜像可用（94.74%）
-
-_有健康检查报告时，下表按每日健康检查结果动态排序；无报告时回退到静态优先级。_
-
-> 💡 **不想安装 Skill？** 每个分类下方都附了 `🚀 不安装 Skill 也能用` 折叠块，
-> 展开复制里面的命令即可临时切换到推荐镜像（默认是健康检查得分最高的那一个）。
-> 如果需要同时管理多个工具、自动备份回滚、检测代理冲突，再考虑安装本仓库 Skill。
-
-#### 🐍 Python (pip)
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Alibaba Cloud PyPI Mirror | [https://mirrors.aliyun.com/pypi/simple](https://mirrors.aliyun.com/pypi/simple) | ✅ 正常 (309.18ms) | 3 |
-| Tsinghua TUNA PyPI Mirror | [https://pypi.tuna.tsinghua.edu.cn/simple](https://pypi.tuna.tsinghua.edu.cn/simple) | ✅ 正常 (1367.72ms) | 1 |
-| USTC PyPI Mirror | [https://pypi.mirrors.ustc.edu.cn/simple](https://pypi.mirrors.ustc.edu.cn/simple) | ✅ 正常 (3598.82ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Alibaba Cloud PyPI Mirror</b>）</summary>
-
-```bash
-# 一次性使用（仅当前命令）
-pip install -i https://mirrors.aliyun.com/pypi/simple <package>
-
-# 当前 shell 生效（关闭终端后失效）
-export PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple
-
-# 永久写入用户配置
-pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
-```
-
-</details>
-
-#### 📦 Node.js (npm)
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| npmmirror (Taobao) | [https://registry.npmmirror.com](https://registry.npmmirror.com) | ✅ 正常 (2149.37ms) | 1 |
-| Tencent Cloud NPM Mirror | [https://mirrors.cloud.tencent.com/npm/](https://mirrors.cloud.tencent.com/npm/) | ✅ 正常 (3301.73ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>npmmirror (Taobao)</b>）</summary>
-
-```bash
-# 一次性使用
-npm install --registry=https://registry.npmmirror.com <package>
-
-# 当前 shell 生效
-export NPM_CONFIG_REGISTRY=https://registry.npmmirror.com
-
-# 永久写入用户配置（~/.npmrc）
-npm config set registry https://registry.npmmirror.com
-# yarn / pnpm 同样的命令把 npm 换成对应工具即可
-```
-
-</details>
-
-#### 🐳 Docker Hub
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| DaoCloud Docker Hub Mirror | [https://docker.m.daocloud.io](https://docker.m.daocloud.io) | ✅ 正常 (728.23ms) | 2 |
-| 1ms.run Docker Hub Mirror | [https://docker.1ms.run](https://docker.1ms.run) | ✅ 正常 (1461.71ms) | 1 |
-| HLMirror Docker Hub Mirror | [https://docker.hlmirror.com](https://docker.hlmirror.com) | ⚠️ 已废弃 (1010.98ms) | 9 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>DaoCloud Docker Hub Mirror</b>）</summary>
-
-> Docker daemon 不读环境变量，必须写入 `daemon.json` 后重启 Docker 才生效。
-
-Linux：
-```bash
-sudo mkdir -p /etc/docker
-echo '{"registry-mirrors": ["https://docker.m.daocloud.io"]}' | sudo tee /etc/docker/daemon.json
-sudo systemctl restart docker
-```
-
-macOS / Windows：在 Docker Desktop → Settings → Docker Engine 里填
-```json
-{ "registry-mirrors": ["https://docker.m.daocloud.io"] }
-```
-
-</details>
-
-#### 🦀 Rust (Cargo)
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Rust Crates Mirror | [https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/](https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/) | ✅ 正常 (916.34ms) | 2 |
-| USTC Rust Crates Mirror | [https://mirrors.ustc.edu.cn/crates.io-index/](https://mirrors.ustc.edu.cn/crates.io-index/) | ✅ 正常 (1220.44ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Rust Crates Mirror</b>）</summary>
-
-```bash
-# 永久写入用户配置（~/.cargo/config.toml）
-mkdir -p ~/.cargo
-cat >> ~/.cargo/config.toml <<'EOF'
-[source.crates-io]
-replace-with = "mirror"
-
-[source.mirror]
-registry = "sparse+https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/"
-EOF
-```
-> 需要 cargo 1.68+ 才支持 sparse 协议；老版本去掉 `sparse+` 前缀。
-
-</details>
-
-#### 🍺 Homebrew
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Homebrew Mirror | [https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/](https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/) | ✅ 正常 (788.15ms) | 1 |
-| USTC Homebrew Mirror | [https://mirrors.ustc.edu.cn/brew.git](https://mirrors.ustc.edu.cn/brew.git) | ✅ 正常 (1215.29ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Homebrew Mirror</b>）</summary>
-
-> Homebrew 涉及 4 个环境变量，且不同镜像的子路径不同，复制时请参考
-> [Tsinghua TUNA Homebrew Mirror 官方帮助页](https://mirrors.tuna.tsinghua.edu.cn/help/homebrew/)。下面以最常用的两个为例：
-
-```bash
-# 当前 shell 生效（USTC 风格）
-export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
-export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
-```
-
-</details>
-
-#### 🐍 Conda/Anaconda
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Anaconda Mirror | [https://mirrors.tuna.tsinghua.edu.cn/anaconda/](https://mirrors.tuna.tsinghua.edu.cn/anaconda/) | ✅ 正常 (702.44ms) | 1 |
-| USTC Anaconda Mirror | [https://mirrors.ustc.edu.cn/anaconda/](https://mirrors.ustc.edu.cn/anaconda/) | ✅ 正常 (1589.84ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Anaconda Mirror</b>）</summary>
-
-```bash
-# 一次性使用（仅当前命令）
-conda install -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main <package>
-
-# 永久写入 ~/.condarc
-conda config --remove-key channels 2>/dev/null || true
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge
-conda config --set show_channel_urls yes
-```
-
-</details>
-
-#### 🐹 Go
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Alibaba Cloud Go Module Proxy | [https://mirrors.aliyun.com/goproxy/](https://mirrors.aliyun.com/goproxy/) | ✅ 正常 (795.23ms) | 2 |
-| China Go Module Proxy | [https://goproxy.cn](https://goproxy.cn) | ✅ 正常 (899.26ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Alibaba Cloud Go Module Proxy</b>）</summary>
-
-```bash
-# 一次性使用（仅当前命令）
-GOPROXY=https://mirrors.aliyun.com/goproxy/,direct go mod tidy
-
-# 当前 shell 生效
-export GOPROXY=https://mirrors.aliyun.com/goproxy/,direct
-
-# 永久写入 go env
-go env -w GOPROXY=https://mirrors.aliyun.com/goproxy/,direct
-```
-
-</details>
-
-#### 📱 Flutter
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| CFUG Flutter Mirror | [https://storage.flutter-io.cn](https://storage.flutter-io.cn) | ✅ 正常 (808.87ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>CFUG Flutter Mirror</b>）</summary>
-
-```bash
-# 当前 shell 生效（Flutter 官方中国网络配置）
-export PUB_HOSTED_URL=https://pub.flutter-io.cn
-export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
-
-# 永久写入 shell profile
-echo 'export PUB_HOSTED_URL=https://pub.flutter-io.cn' >> ~/.zshrc
-echo 'export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn' >> ~/.zshrc
-```
-
-</details>
-
-#### 🐳 Docker CE
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| USTC Docker CE Mirror | [https://mirrors.ustc.edu.cn/docker-ce/linux/](https://mirrors.ustc.edu.cn/docker-ce/linux/) | ✅ 正常 (1814.1ms) | 2 |
-| Tsinghua TUNA Docker CE Mirror | [https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/](https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/) | ✅ 正常 (2107.34ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>USTC Docker CE Mirror</b>）</summary>
-
-> 把官方 Docker apt 源里的域名替换成镜像域名（Ubuntu/Debian 通用）。
-
-```bash
-# 已安装 docker-ce 的系统，把 sources.list.d 里的 download.docker.com 替换为镜像
-sudo sed -i.bak 's|download.docker.com|mirrors.ustc.edu.cn/docker-ce|g' \
-  /etc/apt/sources.list.d/docker.list
-sudo apt update
-```
-
-</details>
-
-#### 🐍 Python（安装本体）
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Python Releases Mirror | [https://mirrors.tuna.tsinghua.edu.cn/python/](https://mirrors.tuna.tsinghua.edu.cn/python/) | ✅ 正常 (725.1ms) | 2 |
-| Huawei Cloud Python Releases Mirror | [https://mirrors.huaweicloud.com/python/](https://mirrors.huaweicloud.com/python/) | ✅ 正常 (937.0ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Python Releases Mirror</b>）</summary>
-
-```bash
-# 当前 shell 生效（让 pyenv 从国内镜像下载 Python 源码包）
-export PYTHON_BUILD_MIRROR_URL=https://mirrors.tuna.tsinghua.edu.cn/python/
-pyenv install 3.12.0
-```
-
-</details>
-
-#### 📦 Node.js（安装本体）
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Node.js Mirror | [https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/](https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/) | ✅ 正常 (905.66ms) | 2 |
-| npmmirror Node.js Binary Mirror | [https://npmmirror.com/mirrors/node/](https://npmmirror.com/mirrors/node/) | ✅ 正常 (1417.44ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Node.js Mirror</b>）</summary>
-
-```bash
-# 当前 shell 生效（让 nvm 从国内镜像下载 Node.js 二进制）
-export NVM_NODEJS_ORG_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/
-nvm install 20
-
-# fnm 用户改为
-export FNM_NODE_DIST_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/
-```
-
-</details>
-
-#### 🐍 Conda/Miniconda（安装本体）
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Miniconda Installer Mirror | [https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/](https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/) | ✅ 正常 (979.15ms) | 1 |
-| USTC Miniconda Installer Mirror | [https://mirrors.ustc.edu.cn/anaconda/miniconda/](https://mirrors.ustc.edu.cn/anaconda/miniconda/) | ✅ 正常 (1214.65ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Miniconda Installer Mirror</b>）</summary>
-
-```bash
-# Linux x86_64：直接下载并安装 Miniconda
-wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-```
-
-</details>
-
-#### 🦀 Rust/rustup（安装本体）
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Rustup Mirror | [https://mirrors.tuna.tsinghua.edu.cn/rustup](https://mirrors.tuna.tsinghua.edu.cn/rustup) | ✅ 正常 (674.75ms) | 1 |
-| USTC Rust Static Mirror | [https://mirrors.ustc.edu.cn/rust-static](https://mirrors.ustc.edu.cn/rust-static) | ✅ 正常 (3702.11ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Rustup Mirror</b>）</summary>
-
-```bash
-# 当前 shell 生效（rustup 安装/更新走国内镜像）
-export RUSTUP_DIST_SERVER=https://mirrors.tuna.tsinghua.edu.cn/rustup
-export RUSTUP_UPDATE_ROOT=https://mirrors.tuna.tsinghua.edu.cn/rustup/rustup
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-</details>
-
-#### 🐹 Go（安装本体）
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Alibaba Cloud Go Binary Mirror | [https://mirrors.aliyun.com/golang/](https://mirrors.aliyun.com/golang/) | ✅ 正常 (7592.11ms) | 1 |
-| Tsinghua TUNA Go Binary Mirror | [https://mirrors.tuna.tsinghua.edu.cn/golang/](https://mirrors.tuna.tsinghua.edu.cn/golang/) | ⚠️ 已废弃 (685.56ms) | 9 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Alibaba Cloud Go Binary Mirror</b>）</summary>
-
-```bash
-# Linux x86_64：直接下载并解压 Go
-wget https://mirrors.aliyun.com/golang/go1.22.0.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
-```
-
-</details>
-
-#### 🐙 GitHub Releases
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| ghfast.top GitHub Proxy | [https://ghfast.top/](https://ghfast.top/) | ✅ 正常 (482.62ms) | 3 |
-| Tsinghua TUNA GitHub Release Mirror | [https://mirrors.tuna.tsinghua.edu.cn/github-release/](https://mirrors.tuna.tsinghua.edu.cn/github-release/) | ✅ 正常 (707.65ms) | 1 |
-| USTC GitHub Release Mirror | [https://mirrors.ustc.edu.cn/github-release/](https://mirrors.ustc.edu.cn/github-release/) | ✅ 正常 (1408.55ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>ghfast.top GitHub Proxy</b>）</summary>
-
-```bash
-# ghfast 通用代理：在原始 GitHub URL 前面拼接前缀即可
-curl -L -O https://ghfast.top/https://github.com/<owner>/<repo>/releases/download/<tag>/<asset>
-
-# TUNA / USTC 选择性镜像：把 https://github.com 替换为镜像前缀（仅收录的仓库可用）
-# 例：https://mirrors.tuna.tsinghua.edu.cn/github-release/git-for-windows/git/...
-```
-
-</details>
-
-#### 🐙 GitHub Clone Acceleration
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| ghfast.top GitHub Clone Proxy | [https://ghfast.top/](https://ghfast.top/) | ✅ 正常 (638.2ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>ghfast.top GitHub Clone Proxy</b>）</summary>
-
-```bash
-# 一次性使用（仅这一次 clone）
-git clone https://ghfast.top/https://github.com/<owner>/<repo>.git
-
-# 永久重写：让 git 把所有 github.com 的 clone 自动走镜像
-git config --global url."https://ghfast.top/https://github.com/".insteadOf "https://github.com/"
-```
-
-</details>
-
-#### 🤗 Hugging Face
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| hf-mirror Hugging Face Mirror | [https://hf-mirror.com](https://hf-mirror.com) | ✅ 正常 (830.39ms) | 1 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>hf-mirror Hugging Face Mirror</b>）</summary>
-
-```bash
-# 推荐：仅当前命令注入镜像（最安全，不污染环境）
-HF_ENDPOINT=https://hf-mirror.com huggingface-cli download gpt2
-
-# 当前 shell 生效
-export HF_ENDPOINT=https://hf-mirror.com
-```
-> 不建议把 `HF_ENDPOINT` 写入 shell profile，会持续把流量导向镜像。
-
-</details>
-
-#### 🐧 Ubuntu (apt)
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Ubuntu Mirror | [https://mirrors.tuna.tsinghua.edu.cn/ubuntu/](https://mirrors.tuna.tsinghua.edu.cn/ubuntu/) | ✅ 正常 (2231.68ms) | 1 |
-| USTC Ubuntu Mirror | [https://mirrors.ustc.edu.cn/ubuntu/](https://mirrors.ustc.edu.cn/ubuntu/) | ✅ 正常 (3758.62ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Ubuntu Mirror</b>）</summary>
-
-```bash
-# Ubuntu 24.04+（DEB822 格式）
-sudo sed -i.bak 's|http://archive.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g; s|http://security.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g' \
-  /etc/apt/sources.list.d/ubuntu.sources
-
-# Ubuntu 22.04 及以前
-sudo sed -i.bak 's|http://archive.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g; s|http://security.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g' \
-  /etc/apt/sources.list
-
-sudo apt update
-```
-> sed 第一次运行会备份原文件到同名 `.bak`，便于回滚。
-
-</details>
-
-#### 🏔️ Alpine Linux
-
-| 镜像名称 | 地址 | 状态 | 优先级 |
-|---------|------|------|--------|
-| Tsinghua TUNA Alpine Mirror | [https://mirrors.tuna.tsinghua.edu.cn/alpine/](https://mirrors.tuna.tsinghua.edu.cn/alpine/) | ✅ 正常 (696.6ms) | 1 |
-| USTC Alpine Mirror | [https://mirrors.ustc.edu.cn/alpine/](https://mirrors.ustc.edu.cn/alpine/) | ✅ 正常 (822.02ms) | 2 |
-
-<details>
-<summary>🚀 不安装 Skill 也能用：复制下面这段（推荐镜像：<b>Tsinghua TUNA Alpine Mirror</b>）</summary>
-
-```bash
-sudo sed -i.bak 's|dl-cdn.alpinelinux.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
-sudo apk update
-```
-
-</details>
-
-
-### 镜像选择标准
-
-优先采用以下标准选择镜像：
-
-1. **官方背书** - 拥有官方文档的高校镜像（清华 TUNA、中科大 USTC）
-2. **可靠性** - 历史在线率和维护承诺
-3. **同步频率** - 与上游的同步频率
-4. **帮助文档** - 官方帮助页面质量
+## 当前进度
+
+- ✅ `cmc list / list mirrors`（5 种输出格式）
+- ✅ `cmc doctor`（OS / proxy / 已装工具 / 各工具当前镜像配置 / 连通性 / 建议）
+- ✅ `cmc health`（并发健康检查，JSON 输出与 `reports/report.json` schema 一致，可直接替换 CI 里的 Python 脚本）
+- ✅ `cmc backup [tool|--all]` / `cmc restore [tool] --latest|--id|--list`（与旧 bash 脚本同格式，旧备份可互通）
+- ✅ `cmc python setup` — pip / uv / poetry
+- ✅ `cmc node setup` — npm / yarn / pnpm
+- ⏳ `cmc docker / apt / homebrew / conda / rust / go / flutter / github`
+- ⏳ `cmc plugin install github:user/cmc-plugin-xxx`（OpenCLI 风格清单插件）
+- ⏳ 一键安装脚本 + Homebrew tap + goreleaser
 
 ---
 
-## 安全与风险
+## 架构（一段话）
 
-本仓库收录的镜像均来自第三方服务，本仓库仅整理配置与使用方式，不对镜像内容、可用性、安全性或合规性做任何承诺。
+```
+data/mirrors.yml ── 唯一镜像数据源（id/url/category/priority/verify）
+       │  go:embed
+       ▼
+internal/mirrors   运行时加载 + ~/.config/cmc/mirrors.yml 覆盖 + plugin 合并
+       │
+       ├──► internal/adapter/python ── pip / uv / poetry config writer
+       ├──► internal/adapter/node   ── npm / yarn / pnpm config writer
+       ├──► internal/doctor         ── 只读环境检测
+       ├──► internal/health         ── 并发 HTTP 健康检查（移植自 check_mirrors.py）
+       └──► internal/config         ── 跨工具 backup/restore（与旧 bash 同格式）
+       ▼
+cmd/cmc                cobra root，每个 adapter 自动注册为子命令
+```
 
-使用第三方镜像需要你自行判断并信任对应镜像服务。
+加一个新工具 ＝ 在 `internal/adapter/<name>/` 下写一个 `Adapter`，在 `init()` 里 `adapter.Register(&Adapter{})`，就出现在 `cmc list` 和 `cmc <name> setup` 里了。
 
 ---
 
-## 致谢
+## 贡献
 
-- [清华大学 TUNA](https://mirrors.tuna.tsinghua.edu.cn/) - 主要镜像源
-- [中科大 USTC LUG](https://mirrors.ustc.edu.cn/) - 备用镜像源
-- [npmmirror](https://npmmirror.com/) - 官方 npm 镜像
-- [hf-mirror](https://hf-mirror.com/) - Hugging Face 镜像与下载说明
-- [padeoe 的 hfd.sh gist](https://gist.github.com/padeoe/697678ab8e528b85a2a7bddafea1fa4f) - `hfd.sh` 脚本与用法
-- 所有开源镜像的贡献者和维护者
+镜像数据改 `data/mirrors.yml`（CI 会自动跑健康检查）。
+代码改 `internal/`，跑 `make build && make test`。
+PR 欢迎 ——尤其是新工具的 adapter。
 
 ---
 
-<p align="center">
-  <sub>为中国开发者用心打造 ❤️</sub>
-</p>
+## 与旧仓库的关系
+
+本项目脱胎于 [`loredunk/china-mirror-skills`](https://github.com/loredunk/china-mirror-skills)（原来是一组 bash 脚本 + Claude Skill）。`mirrors.yml` 与原仓库保持兼容，旧的 `~/.china-mirror-backup/` 备份目录也能被 `cmc restore` 直接还原。
+
+旧 Skill 不再单独维护——AI 直接调 `cmc` 就行。
+
+---
+
+## License
+
+MIT

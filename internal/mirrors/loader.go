@@ -20,7 +20,7 @@ type Store struct {
 }
 
 // Load reads the embedded mirrors.yml, then optionally merges in
-// ~/.config/cm/mirrors.yml (user override) and any provided extra
+// ~/.config/cmc/mirrors.yml (user override) and any provided extra
 // files (used by plugins).
 func Load(extraFiles ...string) (*Store, error) {
 	base, err := parse(embeddedYAML, "builtin")
@@ -29,7 +29,7 @@ func Load(extraFiles ...string) (*Store, error) {
 	}
 
 	if home, err := os.UserHomeDir(); err == nil {
-		userFile := filepath.Join(home, ".config", "cm", "mirrors.yml")
+		userFile := filepath.Join(home, ".config", "cmc", "mirrors.yml")
 		if data, err := os.ReadFile(userFile); err == nil {
 			overlay, err := parse(data, "user")
 			if err != nil {

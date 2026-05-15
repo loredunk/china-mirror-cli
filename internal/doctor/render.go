@@ -7,7 +7,7 @@ import (
 )
 
 // RenderText prints a human-readable Markdown-flavoured summary of the
-// report. Used for the default `--format table` output of cm doctor.
+// report. Used for the default `--format table` output of cmc doctor.
 func (r *Report) RenderText(w io.Writer) error {
 	bw := &bufWriter{w: w}
 	bw.line("# Doctor report")

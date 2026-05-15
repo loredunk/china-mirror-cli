@@ -31,7 +31,7 @@ ones) and report which are reachable. The JSON output is drop-in
 compatible with reports/report.json from the legacy check_mirrors.py,
 so the existing CI workflow can swap directly to:
 
-  cm health --format json --output reports/report.json
+  cmc health --format json --output reports/report.json
 
 When --category is given, only mirrors in that category are probed.
 

@@ -35,14 +35,18 @@ func NewRoot() *cobra.Command {
 	g := &GlobalFlags{}
 
 	root := &cobra.Command{
-		Use:   "cm",
+		Use:   "cmc",
 		Short: "China Mirror CLI — configure dev tools to use China mirrors",
-		Long: `cm is a unified CLI for configuring package managers (pip, npm, docker,
-apt, conda, rust, go, flutter, github, ...) to use mirrors hosted in China.
+		Long: `cmc is a single-binary CLI that points pip, npm, docker, apt, conda,
+rust, go, flutter, github (and more) at mirrors hosted in China.
 
-It replaces the older bash setup.sh scripts with a single binary that reads
-mirrors from data/mirrors.yml at runtime, supports plugins for new tools,
-and emits structured output (table/json/yaml/md/csv).`,
+It is designed to be driven equally well by humans (typed in a terminal,
+OpenCLI-style) and by AI agents (Claude / Cursor / Codex calling it
+through their shell). Mirror metadata lives in mirrors.yml and is read
+at runtime — adding a tool is one adapter, not a new bash script.
+
+Outputs are table/json/yaml/md/csv so the same command works in pipes,
+in dashboards, and in chat replies.`,
 		SilenceUsage: true,
 	}
 
@@ -64,7 +68,7 @@ and emits structured output (table/json/yaml/md/csv).`,
 		newPluginCmd(),
 	)
 
-	// Register every built-in adapter as a child command, e.g. `cm python setup`.
+	// Register every built-in adapter as a child command, e.g. `cmc python setup`.
 	for _, a := range adapter.All() {
 		root.AddCommand(newAdapterCmd(a, g))
 	}
