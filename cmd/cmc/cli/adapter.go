@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -13,8 +14,11 @@ import (
 //	cmc python setup [flags]
 //	cmc python install [flags]
 //
-// A per-adapter --tool flag is exposed so users can scope multi-tool
-// adapters: `cmc python setup --tool pip` only touches pip.
+// Two universal flags are exposed at the sub-command level:
+//
+//	--tool/-t   scope multi-tool adapters (python: pip|uv|poetry, ...)
+//	--extra/-x  pass adapter-specific options as key=value pairs (repeatable),
+//	            e.g. `cmc github setup -x release-url=https://github.com/...`
 func newAdapterCmd(a adapter.Adapter, g *GlobalFlags) *cobra.Command {
 	parent := &cobra.Command{
 		Use:   a.Name(),
@@ -22,7 +26,10 @@ func newAdapterCmd(a adapter.Adapter, g *GlobalFlags) *cobra.Command {
 	}
 	for _, c := range a.Commands() {
 		c := c
-		var toolFlag string
+		var (
+			toolFlag string
+			extras   []string
+		)
 		sub := &cobra.Command{
 			Use:   c.Name,
 			Short: c.Description,
@@ -31,6 +38,13 @@ func newAdapterCmd(a adapter.Adapter, g *GlobalFlags) *cobra.Command {
 				if toolFlag != "" {
 					opts.Extra["tool"] = toolFlag
 				}
+				for _, kv := range extras {
+					k, v, ok := strings.Cut(kv, "=")
+					if !ok {
+						return fmt.Errorf("--extra expects key=value, got %q", kv)
+					}
+					opts.Extra[k] = v
+				}
 				if err := a.Run(c.Name, opts); err != nil {
 					return fmt.Errorf("%s %s: %w", a.Name(), c.Name, err)
 				}
@@ -38,6 +52,7 @@ func newAdapterCmd(a adapter.Adapter, g *GlobalFlags) *cobra.Command {
 			},
 		}
 		sub.Flags().StringVarP(&toolFlag, "tool", "t", "", "scope to a single tool (e.g. pip, npm) — default: every installed tool in this adapter")
+		sub.Flags().StringArrayVarP(&extras, "extra", "x", nil, "adapter-specific option as key=value (repeatable)")
 		parent.AddCommand(sub)
 	}
 	return parent
