@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v0.1.0)'
+        required: true
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync embedded mirrors.yml
+        run: cp data/mirrors.yml internal/mirrors/embedded.yml
+
+      - name: Build linux/amd64 (Ubuntu)
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p dist
+          go build -trimpath \
+            -ldflags "-s -w -X github.com/loredunk/china-mirror/cmd/cmc/cli.Version=${{ steps.ver.outputs.tag }}" \
+            -o dist/cmc-${{ steps.ver.outputs.tag }}-linux-amd64 \
+            ./cmd/cmc
+
+      - name: Build darwin/arm64 (Mac M-series)
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+          CGO_ENABLED: 0
+        run: |
+          go build -trimpath \
+            -ldflags "-s -w -X github.com/loredunk/china-mirror/cmd/cmc/cli.Version=${{ steps.ver.outputs.tag }}" \
+            -o dist/cmc-${{ steps.ver.outputs.tag }}-darwin-arm64 \
+            ./cmd/cmc
+
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum cmc-* | tee SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            dist/cmc-${{ steps.ver.outputs.tag }}-linux-amd64
+            dist/cmc-${{ steps.ver.outputs.tag }}-darwin-arm64
+            dist/SHA256SUMS.txt
